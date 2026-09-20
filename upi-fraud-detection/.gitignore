@@ -1,0 +1,15 @@
+# virtual environments — any .venv*/ or venv*/ directory
+.venv*/
+venv*/
+env/
+__pycache__/
+*.pyc
+
+# data — too large for GitHub, download separately from Kaggle
+data/*.csv
+
+# macOS noise
+.DS_Store
+
+# large exported JSON — keep model_export.js for the demo
+artifacts/model_export.json

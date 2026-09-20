@@ -1,0 +1,8 @@
+# core -- required to train the baseline model and run the API
+pandas
+numpy
+scikit-learn
+joblib
+fastapi
+uvicorn
+pydantic

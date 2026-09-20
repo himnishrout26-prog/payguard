@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en" data-mode="">
+<head>
+<meta charset="utf-8">
+<title>PayGuard — UPI fraud risk console</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,440;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F4F2EC; --surface:#FFFFFF; --surface-2:#ECEAE2; --border:#D9D6CB; --border-strong:#B9B5A6;
+  --text:#181A16; --text-2:#5B5A50; --text-3:#8B897C;
+  --safe:#0F7A5C; --safe-bg:#E3F2EA; --safe-strong:#0B5C45;
+  --risk:#B03A2E; --risk-bg:#FBEAE7; --risk-strong:#7E2A21;
+  --amber:#9C6B14; --amber-bg:#FAF1DE;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:'Fraunces',ui-serif,Georgia,serif;
+  --radius:10px;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --bg:#12130F; --surface:#191B15; --surface-2:#20221B; --border:#33352B; --border-strong:#454739;
+    --text:#EDECE3; --text-2:#A9A791; --text-3:#787667;
+    --safe:#4CC49A; --safe-bg:#152621; --safe-strong:#6BDCB4;
+    --risk:#E58579; --risk-bg:#2A1917; --risk-strong:#F4A79C;
+    --amber:#E0B15C; --amber-bg:#28210F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12130F; --surface:#191B15; --surface-2:#20221B; --border:#33352B; --border-strong:#454739;
+  --text:#EDECE3; --text-2:#A9A791; --text-3:#787667;
+  --safe:#4CC49A; --safe-bg:#152621; --safe-strong:#6BDCB4;
+  --risk:#E58579; --risk-bg:#2A1917; --risk-strong:#F4A79C;
+  --amber:#E0B15C; --amber-bg:#28210F;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.6;}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 24px 64px;}
+
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:36px;flex-wrap:wrap;}
+.brand h1{font-family:var(--serif);font-weight:600;font-size:34px;margin:0 0 4px;letter-spacing:-0.01em;}
+.brand p{margin:0;color:var(--text-2);font-size:13px;}
+.status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);border:1px solid var(--border);border-radius:20px;padding:6px 12px;background:var(--surface);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--safe);}
+@media (prefers-reduced-motion: no-preference){ .dot{animation:pulse 2.4s ease-in-out infinite;} }
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:20px;}
+@media (max-width:820px){ .grid{grid-template-columns:1fr;} }
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.card h2{font-family:var(--serif);font-weight:600;font-size:16px;margin:0 0 3px;}
+.card .sub{color:var(--text-3);font-size:12px;margin:0 0 18px;}
+
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.preset-btn{font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);cursor:pointer;transition:border-color .15s;}
+.preset-btn:hover{border-color:var(--border-strong);color:var(--text);}
+.preset-btn:focus-visible{outline:2px solid var(--text-2);outline-offset:2px;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--text-3);margin-bottom:5px;}
+.field input, .field select{
+  width:100%;font-family:var(--mono);font-size:13.5px;padding:9px 10px;border-radius:7px;
+  border:1px solid var(--border);background:var(--surface-2);color:var(--text);
+}
+.field input:focus, .field select:focus{outline:none;border-color:var(--border-strong);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.score-btn{
+  width:100%;font-family:var(--mono);font-weight:500;font-size:13.5px;padding:12px;margin-top:4px;
+  border-radius:7px;border:none;background:var(--text);color:var(--bg);cursor:pointer;
+}
+.score-btn:hover{opacity:0.88;}
+.score-btn:focus-visible{outline:2px solid var(--text-2);outline-offset:2px;}
+
+.verdict{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap;}
+.risk-num{font-family:var(--serif);font-weight:600;font-size:52px;line-height:1;}
+.badge{font-size:11px;padding:5px 10px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.badge.flag{background:var(--risk-bg);color:var(--risk-strong);}
+.badge.clear{background:var(--safe-bg);color:var(--safe-strong);}
+.thresh-note{color:var(--text-3);font-size:11.5px;margin:2px 0 20px;}
+
+.factors-title{font-size:11px;color:var(--text-3);margin:0 0 10px;text-transform:none;}
+.factor{margin-bottom:12px;}
+.factor-top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:8px;}
+.factor-desc{color:var(--text);}
+.factor-val{color:var(--text-3);white-space:nowrap;font-size:11.5px;}
+.bar-track{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;position:relative;}
+.bar-fill{height:100%;border-radius:3px;}
+.bar-fill.up{background:var(--risk);}
+.bar-fill.down{background:var(--safe);}
+
+.empty{color:var(--text-3);font-size:13px;padding:20px 0;}
+
+.stats-strip{margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media (max-width:820px){ .stats-strip{grid-template-columns:repeat(2,1fr);} }
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+.stat .num{font-family:var(--serif);font-weight:600;font-size:22px;}
+.stat .lbl{font-size:11px;color:var(--text-3);margin-top:3px;}
+
+footer{margin-top:28px;color:var(--text-3);font-size:11.5px;line-height:1.7;border-top:1px solid var(--border);padding-top:16px;}
+footer code{background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1>PayGuard</h1>
+      <p>UPI transaction risk scoring — running the real trained model, client-side</p>
+    </div>
+    <div class="status"><span class="dot"></span><span id="status-line">loading model…</span></div>
+  </header>
+
+  <div class="grid">
+
+    <div class="card">
+      <h2>Transaction ledger</h2>
+      <p class="sub">Enter a transaction, or load a sample</p>
+
+      <div class="presets" id="presets"></div>
+
+      <div class="field">
+        <label for="f-type">Transaction type</label>
+        <select id="f-type">
+          <option value="PAYMENT">PAYMENT</option>
+          <option value="TRANSFER">TRANSFER</option>
+          <option value="CASH_OUT">CASH_OUT</option>
+          <option value="CASH_IN">CASH_IN</option>
+          <option value="DEBIT">DEBIT</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-amount">Amount (₹)</label>
+        <input type="number" id="f-amount" value="45230">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-oob">Sender balance before</label>
+          <input type="number" id="f-oob" value="45230">
+        </div>
+        <div class="field">
+          <label for="f-nob">Sender balance after</label>
+          <input type="number" id="f-nob" value="0">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-odb">Receiver balance before</label>
+          <input type="number" id="f-odb" value="120">
+        </div>
+        <div class="field">
+          <label for="f-ndb">Receiver balance after</label>
+          <input type="number" id="f-ndb" value="36304">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="f-step">Hour of day (0–23)</label>
+          <input type="number" id="f-step" value="14" min="0" max="23">
+        </div>
+        <div class="field">
+          <label for="f-acct">Sender account ID</label>
+          <input type="text" id="f-acct" value="C1234567890">
+        </div>
+      </div>
+
+      <button class="score-btn" id="score-btn">Score transaction</button>
+    </div>
+
+    <div class="card">
+      <h2>Risk verdict</h2>
+      <p class="sub">Calibrated probability of fraud</p>
+      <div id="verdict-area">
+        <div class="empty">Score a transaction to see its risk breakdown.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stats-strip" id="stats"></div>
+
+  <footer>
+    Model: gradient-boosted trees, Platt-scaled, threshold chosen to minimize
+    ₹(missed fraud) + ₹(false-positive friction cost). Exported from the trained
+    model and run directly in your browser — no server round-trip. Sender history
+    (used for the velocity feature) is kept in memory for this session only and
+    resets on reload. Trained on a synthetic PaySim-schema dataset; see the project
+    README for details.
+  </footer>
+
+</div>
+
+<!-- The model is loaded from the file written by src/export_for_ui.py.
+     Re-run that script after retraining and reload this page — no HTML edits needed. -->
+<script src="artifacts/model_export.js"></script>
+<script>
+(function () {
+  if (!window.MODEL_EXPORT) {
+    document.body.innerHTML =
+      '<p style="padding:40px;font-family:monospace;line-height:1.7;max-width:640px">' +
+      '<b>artifacts/model_export.js not found.</b><br><br>' +
+      'Run this from the repo root:<br>' +
+      '<code style="background:#eee;padding:2px 6px">python3 src/export_for_ui.py</code><br><br>' +
+      'Then reload this page. If you moved payguard.html, put it back at the repo root ' +
+      '(so that <code>artifacts/model_export.js</code> resolves), or serve the folder with ' +
+      '<code>python3 -m http.server</code>.' +
+      '</p>';
+    return;
+  }
+
+  const MODEL   = window.MODEL_EXPORT;
+  const METRICS = MODEL.metrics || {};
+
+  // ------------------------------------------------------------------
+  // Friendly labels for feature names
+  // ------------------------------------------------------------------
+  const FRIENDLY = {
+    errorBalanceOrig: "Sender balance doesn't reconcile",
+    errorBalanceDest: "Receiver balance doesn't reconcile",
+    orig_drained_to_zero: "Sender account emptied to ₹0",
+    dest_is_mule_pattern: "Receiver shows mule-like zero balance",
+    amount_to_orig_balance_ratio: "Amount vs. sender's balance",
+    amount_vs_orig_avg_ratio: "Amount vs. sender's typical size",
+    orig_txn_count_so_far: "Sender's transaction history length",
+    orig_avg_amount_so_far: "Sender's historical average amount",
+    is_night: "Late-night transaction",
+    hour_of_day: "Hour of day",
+    oldbalanceOrg: "Sender balance before",
+    newbalanceOrig: "Sender balance after",
+    oldbalanceDest: "Receiver balance before",
+    newbalanceDest: "Receiver balance after",
+    amount: "Transaction amount",
+    type_CASH_IN: "Transaction type is CASH_IN",
+    type_CASH_OUT: "Transaction type is CASH_OUT",
+    type_DEBIT: "Transaction type is DEBIT",
+    type_PAYMENT: "Transaction type is PAYMENT",
+    type_TRANSFER: "Transaction type is TRANSFER",
+  };
+
+  // In-memory per-account velocity store, session-only (see footer note).
+  const history = {};
+
+  // ------------------------------------------------------------------
+  // Feature engineering — MUST match src/features.py exactly
+  // ------------------------------------------------------------------
+  function computeFeatures(txn) {
+    const errorBalanceOrig = txn.newbalanceOrig + txn.amount - txn.oldbalanceOrg;
+    const errorBalanceDest = txn.oldbalanceDest + txn.amount - txn.newbalanceDest;
+    const orig_drained_to_zero = (txn.newbalanceOrig === 0 && txn.oldbalanceOrg > 0) ? 1 : 0;
+    const dest_is_mule_pattern = (txn.oldbalanceDest === 0 && txn.newbalanceDest === 0 && txn.amount > 0) ? 1 : 0;
+    const amount_to_orig_balance_ratio = txn.amount / (txn.oldbalanceOrg + 1.0);
+    const hour_of_day = txn.step % 24;
+    const is_night = [0, 1, 2, 3, 4, 22, 23].indexOf(hour_of_day) >= 0 ? 1 : 0;
+    const h = history[txn.nameOrig] || { count: 0, amount_sum: 0 };
+    const orig_txn_count_so_far = h.count;
+    const orig_avg_amount_so_far = h.count > 0 ? h.amount_sum / h.count : txn.amount;
+    const amount_vs_orig_avg_ratio = txn.amount / (orig_avg_amount_so_far + 1.0);
+    const oneHot = { CASH_IN: 0, CASH_OUT: 0, DEBIT: 0, PAYMENT: 0, TRANSFER: 0 };
+    oneHot[txn.type] = 1;
+
+    // Must be in the same order as FEATURE_COLUMNS in features.py
+    return [
+      txn.amount, txn.oldbalanceOrg, txn.newbalanceOrig, txn.oldbalanceDest, txn.newbalanceDest,
+      errorBalanceOrig, errorBalanceDest, orig_drained_to_zero, dest_is_mule_pattern,
+      amount_to_orig_balance_ratio, hour_of_day, is_night,
+      orig_txn_count_so_far, orig_avg_amount_so_far, amount_vs_orig_avg_ratio,
+      oneHot.CASH_IN, oneHot.CASH_OUT, oneHot.DEBIT, oneHot.PAYMENT, oneHot.TRANSFER,
+    ];
+  }
+
+  // ------------------------------------------------------------------
+  // Model evaluation — walks the flat tree format from export_for_ui.py.
+  //   - feature[node] < 0    => leaf node, read leaf_value[node]
+  //   - feature[node] >= 0   => internal node, split on feature, threshold
+  //   - each tree contributes shrinkage * (delta at each split)
+  //     where delta = child_value - parent_value (Saabas attribution)
+  // ------------------------------------------------------------------
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function scoreVector(x) {
+    let margin = MODEL.bias;
+    const contrib = new Array(x.length).fill(0);
+
+    for (let ti = 0; ti < MODEL.trees.length; ti++) {
+      const t = MODEL.trees[ti];
+      let node = t.root;
+      while (t.feature[node] >= 0) {
+        const f = t.feature[node];
+        const next = x[f] <= t.threshold[node] ? t.left[node] : t.right[node];
+        const parentVal = t.internal_value[node];
+        const childVal  = t.feature[next] >= 0 ? t.internal_value[next] : t.leaf_value[next];
+        const delta = t.shrinkage * (childVal - parentVal);
+        contrib[f] += delta;
+        margin += delta;
+        node = next;
+      }
+    }
+
+    const gbmProba = sigmoid(margin);
+    const calibrated = sigmoid(MODEL.calib_coef * gbmProba + MODEL.calib_intercept);
+    return { calibrated, contrib, margin };
+  }
+
+  function fmtVal(name, v) {
+    if (name.indexOf('type_') === 0) return v ? 'yes' : 'no';
+    if (name === 'hour_of_day') return v.toFixed(0) + ':00';
+    if (['amount','oldbalanceOrg','newbalanceOrig','oldbalanceDest','newbalanceDest',
+         'errorBalanceOrig','errorBalanceDest','orig_avg_amount_so_far'].indexOf(name) >= 0)
+      return '₹' + Math.round(v).toLocaleString('en-IN');
+    if (name.indexOf('ratio') >= 0) return v.toFixed(2) + '×';
+    return v.toFixed(2);
+  }
+
+  function render(txn, result) {
+    const flagged = result.calibrated >= MODEL.threshold;
+    const pct = result.calibrated * 100;
+    const pctStr = pct < 0.01 ? '<0.01%' : pct.toFixed(pct < 1 ? 3 : 1) + '%';
+
+    const ranked = MODEL.feature_names
+      .map((name, i) => ({ name, contrib: result.contrib[i], val: txn.features[i] }))
+      .sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib))
+      .slice(0, 5);
+    const maxAbs = Math.max.apply(null, ranked.map(r => Math.abs(r.contrib)).concat([0.0001]));
+
+    const factorsHtml = ranked.map(r => {
+      const up = r.contrib > 0;
+      const widthPct = Math.max(6, Math.round((Math.abs(r.contrib) / maxAbs) * 100));
+      return '<div class="factor">' +
+        '<div class="factor-top">' +
+          '<span class="factor-desc">' + (FRIENDLY[r.name] || r.name) + '</span>' +
+          '<span class="factor-val">' + fmtVal(r.name, r.val) + '</span>' +
+        '</div>' +
+        '<div class="bar-track"><div class="bar-fill ' + (up ? 'up' : 'down') +
+          '" style="width:' + widthPct + '%"></div></div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('verdict-area').innerHTML =
+      '<div class="verdict">' +
+        '<span class="risk-num" style="color:' + (flagged ? 'var(--risk)' : 'var(--safe)') + '">' + pctStr + '</span>' +
+        '<span class="badge ' + (flagged ? 'flag' : 'clear') + '">' +
+          (flagged ? 'flagged for review' : 'clears threshold') +
+        '</span>' +
+      '</div>' +
+      '<p class="thresh-note">Cost-optimal threshold: ' +
+        (MODEL.threshold * 100).toFixed(4) + '%</p>' +
+      '<p class="factors-title">Top contributing factors</p>' +
+      factorsHtml;
+  }
+
+  function scoreTransaction() {
+    const txn = {
+      type: document.getElementById('f-type').value,
+      amount: parseFloat(document.getElementById('f-amount').value) || 0,
+      oldbalanceOrg: parseFloat(document.getElementById('f-oob').value) || 0,
+      newbalanceOrig: parseFloat(document.getElementById('f-nob').value) || 0,
+      oldbalanceDest: parseFloat(document.getElementById('f-odb').value) || 0,
+      newbalanceDest: parseFloat(document.getElementById('f-ndb').value) || 0,
+      step: parseInt(document.getElementById('f-step').value) || 0,
+      nameOrig: document.getElementById('f-acct').value || 'C000000000',
+    };
+    const features = computeFeatures(txn);
+    txn.features = features;
+    const result = scoreVector(features);
+    render(txn, result);
+
+    const h = history[txn.nameOrig] || { count: 0, amount_sum: 0 };
+    h.count += 1;
+    h.amount_sum += txn.amount;
+    history[txn.nameOrig] = h;
+  }
+
+  // ------------------------------------------------------------------
+  // Presets
+  // ------------------------------------------------------------------
+  const PRESETS = [
+    { label: 'Everyday payment',         type: 'PAYMENT',  amount: 350,    oldbalanceOrg: 15200,  newbalanceOrig: 14850, oldbalanceDest: 0,     newbalanceDest: 0,     step: 9, nameOrig: 'C500001' },
+    { label: 'Large legit transfer',     type: 'TRANSFER', amount: 42000,  oldbalanceOrg: 50000,  newbalanceOrig: 8000,  oldbalanceDest: 1200,  newbalanceDest: 43200, step: 16, nameOrig: 'C500002' },
+    { label: 'Suspicious drain',         type: 'CASH_OUT', amount: 68500,  oldbalanceOrg: 68500,  newbalanceOrig: 0,     oldbalanceDest: 40,    newbalanceDest: 56210, step: 3, nameOrig: 'C500003' },
+    { label: 'Late-night mule transfer', type: 'TRANSFER', amount: 121000, oldbalanceOrg: 121000, newbalanceOrig: 0,     oldbalanceDest: 0,     newbalanceDest: 90750, step: 2, nameOrig: 'C500004' },
+  ];
+
+  const presetWrap = document.getElementById('presets');
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    btn.textContent = p.label;
+    btn.addEventListener('click', () => {
+      document.getElementById('f-type').value = p.type;
+      document.getElementById('f-amount').value = p.amount;
+      document.getElementById('f-oob').value = p.oldbalanceOrg;
+      document.getElementById('f-nob').value = p.newbalanceOrig;
+      document.getElementById('f-odb').value = p.oldbalanceDest;
+      document.getElementById('f-ndb').value = p.newbalanceDest;
+      document.getElementById('f-step').value = p.step;
+      document.getElementById('f-acct').value = p.nameOrig;
+      scoreTransaction();
+    });
+    presetWrap.appendChild(btn);
+  });
+
+  document.getElementById('score-btn').addEventListener('click', scoreTransaction);
+
+  // ------------------------------------------------------------------
+  // Header + stats
+  // ------------------------------------------------------------------
+  const nTrees = MODEL.trees.length;
+  document.getElementById('status-line').textContent =
+    MODEL.model_type + ' loaded · ' + nTrees + ' trees · scoring locally';
+
+  const cm = (METRICS.test_confusion_matrix) || { tn: 0, fp: 0, fn: 0, tp: 0 };
+  const totalLegit = cm.fp + cm.tn;
+  const saved = (METRICS.cost_do_nothing_inr || 0) - (METRICS.cost_with_model_inr || 0);
+  document.getElementById('stats').innerHTML =
+    '<div class="stat"><div class="num">' + ((METRICS.pr_auc || 0) * 100).toFixed(1) + '%</div>' +
+      '<div class="lbl">PR-AUC (test)</div></div>' +
+    '<div class="stat"><div class="num">' + ((METRICS.fraud_amount_caught_pct || 0) * 100).toFixed(0) + '%</div>' +
+      '<div class="lbl">fraud amount caught</div></div>' +
+    '<div class="stat"><div class="num">' + cm.fp + '</div>' +
+      '<div class="lbl">false positives / ' + totalLegit.toLocaleString('en-IN') + ' legit txns</div></div>' +
+    '<div class="stat"><div class="num">₹' + Math.round(saved).toLocaleString('en-IN') + '</div>' +
+      '<div class="lbl">est. saved on test slice</div></div>';
+})();
+</script>
+</body>
+</html>

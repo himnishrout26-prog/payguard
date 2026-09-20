@@ -1,0 +1,9 @@
+data/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+tests/
+*.md
+payguard.html
+.pytest_cache/

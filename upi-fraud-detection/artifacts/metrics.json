@@ -1,0 +1,27 @@
+{
+  "pr_auc": 0.9998748506437776,
+  "roc_auc": 0.9999991207114943,
+  "brier_score": 3.335146621943834e-05,
+  "latency_ms_mean": 0.702326318481937,
+  "latency_ms_p95": 0.7054895875626243,
+  "train_seconds": 20.4,
+  "fraud_amount_caught_pct": 0.99994404095873,
+  "false_positive_rate": 0.0013299901197727654,
+  "model_type": "lightgbm",
+  "cost_optimal_threshold": 1.3509686448514009e-05,
+  "test_confusion_matrix": {
+    "tn": 949119,
+    "fp": 1264,
+    "fn": 1,
+    "tp": 4009
+  },
+  "n_train": 3499441,
+  "n_val": 954393,
+  "n_calib": 954393,
+  "n_test": 954393,
+  "train_positive_rate": 0.0008295610641813935,
+  "baseline_pr_auc_random": 0.004201623440238979,
+  "flat_cost_per_false_positive_inr": 35.0,
+  "cost_do_nothing_inr": 6323807770.26,
+  "cost_with_model_inr": 398114.2199994106
+}

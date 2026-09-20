@@ -1,0 +1,4 @@
+# for train_compare.py (LightGBM/XGBoost benchmark) and real TreeSHAP
+lightgbm
+xgboost
+shap

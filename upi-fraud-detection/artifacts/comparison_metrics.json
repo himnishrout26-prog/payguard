@@ -1,0 +1,53 @@
+{
+  "sklearn_gbm": {
+    "pr_auc": 0.9995042917029584,
+    "roc_auc": 0.999786460548706,
+    "brier_score": 4.517333371443138e-05,
+    "latency_ms_mean": 0.7022093756822869,
+    "latency_ms_p95": 0.7368402148131281,
+    "train_seconds": 1439.4,
+    "threshold": 2.229894070092283e-05,
+    "fraud_amount_caught_pct": 0.9998809389330996,
+    "false_positive_rate": 0.0027946627833199877,
+    "confusion_matrix": {
+      "tn": 947727,
+      "fp": 2656,
+      "fn": 2,
+      "tp": 4008
+    }
+  },
+  "lightgbm": {
+    "pr_auc": 0.9998748506437776,
+    "roc_auc": 0.9999991207114943,
+    "brier_score": 3.335146621943834e-05,
+    "latency_ms_mean": 0.702326318481937,
+    "latency_ms_p95": 0.7054895875626243,
+    "train_seconds": 20.4,
+    "threshold": 1.3509686448514009e-05,
+    "fraud_amount_caught_pct": 0.99994404095873,
+    "false_positive_rate": 0.0013299901197727654,
+    "confusion_matrix": {
+      "tn": 949119,
+      "fp": 1264,
+      "fn": 1,
+      "tp": 4009
+    }
+  },
+  "xgboost": {
+    "pr_auc": 0.9995075488248163,
+    "roc_auc": 0.9998356007322031,
+    "brier_score": 3.984766954090446e-05,
+    "latency_ms_mean": 1.2594928090111353,
+    "latency_ms_p95": 1.3398940602201035,
+    "train_seconds": 41.8,
+    "threshold": 2.9356652457367354e-05,
+    "fraud_amount_caught_pct": 0.9998809389330996,
+    "false_positive_rate": 0.0016887928340469053,
+    "confusion_matrix": {
+      "tn": 948778,
+      "fp": 1605,
+      "fn": 2,
+      "tp": 4008
+    }
+  }
+}
